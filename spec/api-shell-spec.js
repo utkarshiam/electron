@@ -27,16 +27,7 @@ describe('shell module', () => {
       }
     })
 
-    afterEach(() => {
-      // reset env vars to prevent side effects
-      if (process.platform === 'linux') {
-        process.env.DE = envVars.de
-        process.env.BROWSER = envVars.browser
-        process.env.DISPLAY = envVars.display
-      }
-    })
-
-    it('opens an external link asynchronously', done => {
+    it('opens an external link', done => {
       const url = 'http://www.example.com'
       if (process.platform === 'linux') {
         process.env.BROWSER = '/bin/true'
@@ -45,18 +36,6 @@ describe('shell module', () => {
       }
 
       shell.openExternal(url).then(() => done())
-    })
-
-    it('opens an external link synchronously', () => {
-      const url = 'http://www.example.com'
-      if (process.platform === 'linux') {
-        process.env.DE = 'generic'
-        process.env.DE = '/bin/true'
-        process.env.DISPLAY = ''
-      }
-
-      const success = shell.openExternalSync(url)
-      assert.strictEqual(true, success)
     })
   })
 
