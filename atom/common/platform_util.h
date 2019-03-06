@@ -38,7 +38,7 @@ struct OpenExternalOptions {
 // (For example, mailto: URLs in the default mail user agent.)
 void OpenExternal(const GURL& url,
                   const OpenExternalOptions& options,
-                  base::Optional<OpenExternalCallback> callback);
+                  OpenExternalCallback callback);
 
 // Move a file to trash.
 bool MoveItemToTrash(const base::FilePath& full_path);

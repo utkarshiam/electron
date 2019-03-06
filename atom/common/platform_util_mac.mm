@@ -93,28 +93,22 @@ bool OpenItem(const base::FilePath& full_path) {
 
 void OpenExternal(const GURL& url,
                   const OpenExternalOptions& options,
-                  base::Optional<OpenExternalCallback> callback) {
+                  OpenExternalCallback callback) {
+  DCHECK([NSThread isMainThread]);
   NSURL* ns_url = net::NSURLWithGURL(url);
-  if (callback) {
-    if (!ns_url) {
-      std::move(callback.value()).Run("Invalid URL");
-      return;
-    }
-
-    __block OpenExternalCallback c = std::move(callback.value());
-    dispatch_async(
-        dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-          __block std::string error = OpenURL(ns_url, options.activate);
-          dispatch_async(dispatch_get_main_queue(), ^{
-            std::move(c).Run(error);
-          });
-        });
-  } else {
-    DCHECK([NSThread isMainThread]);
-    if (!ns_url)
-      return;
-    ignore_result(OpenURL(ns_url, options.activate).empty());
+  if (!ns_url) {
+    std::move(callback).Run("Invalid URL");
+    return;
   }
+
+  __block OpenExternalCallback c = std::move(callback);
+  dispatch_async(
+      dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        __block std::string error = OpenURL(ns_url, options.activate);
+        dispatch_async(dispatch_get_main_queue(), ^{
+          std::move(c).Run(error);
+        });
+      });
 }
 
 bool MoveItemToTrash(const base::FilePath& full_path) {

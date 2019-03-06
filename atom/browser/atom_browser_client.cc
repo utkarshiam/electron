@@ -793,10 +793,16 @@ void AtomBrowserClient::RenderProcessExited(
   }
 }
 
+void OnOpenExternalFinished(const std::string& msg) {
+  LOG(INFO) << msg;
+}
+
 void OnOpenExternal(const GURL& escaped_url, bool allowed) {
-  if (allowed)
-    platform_util::OpenExternal(
-        escaped_url, platform_util::OpenExternalOptions(), base::nullopt);
+  if (allowed) {
+    platform_util::OpenExternal(escaped_url,
+                                platform_util::OpenExternalOptions(),
+                                base::BindOnce(&OnOpenExternalFinished));
+  }
 }
 
 void HandleExternalProtocolInUI(

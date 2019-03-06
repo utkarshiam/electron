@@ -320,21 +320,16 @@ bool OpenItem(const base::FilePath& full_path) {
     return ui::win::OpenFileViaShell(full_path);
 }
 
-void OpenExternalImpl(const GURL& url, const OpenExternalOptions& options) {
-  base::CreateCOMSTATaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&OpenExternalOnWorkerThread, url, options));
-}
-
 void OpenExternal(const GURL& url,
                   const OpenExternalOptions& options,
-                  base::Optional<OpenExternalCallback> callback) {
-  if (callback)
-    std::move(callback.value())
-        .Run(OpenExternalImpl(url, options) ? "" : "Failed to open");
-  else
-    OpenExternalImpl(url, options);
+                  OpenExternalCallback callback) {
+  // TODO(gabriel): Implement async open if callback is specified
+  std::move(callback).Run(
+      base::CreateCOMSTATaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(&OpenExternalOnWorkerThread, url, options));
+      ? "" : "Failed to open");
 }
 
 bool MoveItemToTrash(const base::FilePath& path) {
