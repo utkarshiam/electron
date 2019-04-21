@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "atom/browser/browser.h"
 #include "atom/browser/native_window.h"
 #include "atom/browser/web_view_manager.h"
 #include "atom/common/native_mate_converters/value_converter.h"
@@ -124,10 +125,6 @@ WebContentsPreferences::WebContentsPreferences(
   SetDefaultBoolIfUndefined(options::kNodeIntegrationInWorker, false);
   SetDefaultBoolIfUndefined(options::kDisableHtmlFullscreenWindowResize, false);
   SetDefaultBoolIfUndefined(options::kWebviewTag, false);
-  SetDefaultBoolIfUndefined(options::kSandbox, false);
-  SetDefaultBoolIfUndefined(options::kNativeWindowOpen, false);
-  SetDefaultBoolIfUndefined(options::kEnableRemoteModule, true);
-  SetDefaultBoolIfUndefined(options::kContextIsolation, false);
   SetDefaultBoolIfUndefined(options::kJavaScript, true);
   SetDefaultBoolIfUndefined(options::kImages, true);
   SetDefaultBoolIfUndefined(options::kTextAreasAreResizable, true);
@@ -146,6 +143,26 @@ WebContentsPreferences::WebContentsPreferences(
   SetDefaultBoolIfUndefined(options::kScrollBounce, false);
 #endif
   SetDefaultBoolIfUndefined(options::kOffscreen, false);
+
+  bool secure_mode_enabled = Browser::Get()->secure_mode_enabled();
+
+  if (secure_mode_enabled) {
+    SetDefaultBoolIfUndefined(options::kSandbox, true);
+    SetDefaultBoolIfUndefined(options::kContextIsolation, true);
+    SetDefaultBoolIfUndefined(options::kNativeWindowOpen, true);
+    SetDefaultBoolIfUndefined(options::kEnableRemoteModule, false);
+  } else {
+    SetDefaultBoolIfUndefined(options::kSandbox, false);
+    SetDefaultBoolIfUndefined(options::kNativeWindowOpen, false);
+    SetDefaultBoolIfUndefined(options::kContextIsolation, false);
+    SetDefaultBoolIfUndefined(options::kEnableRemoteModule, true);
+  }
+
+  if (secure_mode_enabled) {
+    // Disable these options altogether
+    SetBool(options::kNodeIntegration, false);
+    SetBool(options::kNodeIntegrationInWorker, false);
+  }
 
   // If this is a <webview> tag, and the embedder is offscreen-rendered, then
   // this WebContents is also offscreen-rendered.
@@ -183,6 +200,10 @@ bool WebContentsPreferences::SetDefaultBoolIfUndefined(
     preference_.SetKey(key, base::Value(val));
     return val;
   }
+}
+
+void WebContentsPreferences::SetBool(const base::StringPiece& key, bool val) {
+  preference_.SetKey(key, base::Value(val));
 }
 
 bool WebContentsPreferences::IsEnabled(const base::StringPiece& name,
@@ -275,7 +296,7 @@ void WebContentsPreferences::AppendCommandLineSwitches(
   if (IsEnabled(options::kNodeIntegrationInWorker))
     command_line->AppendSwitch(switches::kNodeIntegrationInWorker);
 
-  // Check if webview tag creation is enabled, default to nodeIntegration value.
+  // Check if webview tag creation is enabled.
   if (IsEnabled(options::kWebviewTag))
     command_line->AppendSwitch(switches::kWebviewTag);
 

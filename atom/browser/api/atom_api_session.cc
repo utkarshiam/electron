@@ -334,7 +334,7 @@ void Session::OnDownloadCreated(content::DownloadManager* manager,
     handle->SetSavePath(item->GetTargetFilePath());
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(item);
-  bool prevent_default = Emit("will-download", handle, web_contents);
+  bool prevent_default = Emit("-will-download", handle, web_contents);
   if (prevent_default) {
     item->Cancel(true);
     item->Remove();
