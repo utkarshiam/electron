@@ -35,7 +35,7 @@ class Promise {
   void RejectWithErrorMessage(const std::string& error);
 
  protected:
-  v8::Isolate* isolate_;
+  v8::Isolate* isolate_ = nullptr;
 
  private:
   v8::Local<v8::Promise::Resolver> resolver_;
