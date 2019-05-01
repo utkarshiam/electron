@@ -737,15 +737,15 @@ void TopLevelWindow::SetProgressBar(double progress, mate::Arguments* args) {
   std::string mode;
   args->GetNext(&options) && options.Get("mode", &mode);
 
-  NativeWindow::ProgressState state = NativeWindow::PROGRESS_NORMAL;
+  NativeWindow::ProgressState state = NativeWindow::ProgressState::NORMAL;
   if (mode == "error")
-    state = NativeWindow::PROGRESS_ERROR;
+    state = NativeWindow::ProgressState::ERROR;
   else if (mode == "paused")
-    state = NativeWindow::PROGRESS_PAUSED;
+    state = NativeWindow::ProgressState::PAUSED;
   else if (mode == "indeterminate")
-    state = NativeWindow::PROGRESS_INDETERMINATE;
+    state = NativeWindow::ProgressState::INDETERMINATE;
   else if (mode == "none")
-    state = NativeWindow::PROGRESS_NONE;
+    state = NativeWindow::ProgressState::NONE;
 
   window_->SetProgressBar(progress, state);
 }
